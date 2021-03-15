@@ -41,7 +41,7 @@ public:
 				return false;
 			for (const Element& a : elements)
 				for (const Element& b : elements) {
-					if (elements.find(a + group.inverses[b]) == elements.end())
+					if (elements.find(a + b.inverse()) == elements.end())
 						return false;
 				}
 			return true;
@@ -61,11 +61,11 @@ public:
 	inline bool isIdentity(Element& e) const noexcept { return e == identityElement; };
 	std::set<Element> getElements() const noexcept { return elements; };
 	std::map<Element, Element> getInverses() noexcept {
-		std::set<Element> notFound = elements;
-		for (const Element& element : elements)
+		for (const Element& element : elements) {
 			for (const Element& element2 : elements)
 				if (element + element2 == identityElement)
 					inverses.insert({ element, element2 });
+		}
 		return inverses;
 	};
 	size_t order() const noexcept { return elements.size(); };

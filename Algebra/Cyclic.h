@@ -21,12 +21,12 @@ struct Cyclic : public Element {
 	};
 	Cyclic operator&() const noexcept { return Cyclic(num); };
 #endif
-	/*Cyclic inverse() const noexcept {
+	Cyclic inverse() const noexcept {
 		Cyclic result;
 		for (int index = 0; index < num; ++index)
-			result[index] = val[val[index] - 1];
+			result[index] = getIdx(getIdx(index + 1) + 1);
 		return result;
-	};*/
+	};
 	std::set<Cyclic> generateAllElements() {
 		std::set<Cyclic> result = { Cyclic() };
 		permute(result, Cyclic(), 0, num - 1);
@@ -57,7 +57,13 @@ struct Cyclic : public Element {
 				return lhs[index] > rhs[index];
 		return false;
 	};
-	inline int getResult(const int& num) const noexcept { return val[num - 1]; }
+	inline int getResult(const int& num) const noexcept { return val[num - 1]; }	
+	inline int getIdx(const int& n) const noexcept { 
+		for (int i = 0; i < n; ++i)
+			if (val[i] == n)
+				return i;
+		return -1; 
+	}
 	friend std::ostream& operator<<(std::ostream& out, const Cyclic& element) {
 		for (std::vector<int> val : getCyclicRep(element)) {
 			out << "(";
@@ -65,8 +71,8 @@ struct Cyclic : public Element {
 				out << v;
 			out << ")";
 		}
-
-		/*for (int index = 0; index < num; ++index)
+		/*out << '\t';
+		for (int index = 0; index < num; ++index)
 			out << element.val[index];*/
 
 		return out;

@@ -13,7 +13,7 @@ struct Element {
 	/// Produces an element that when added to this element gives the identity. Not used or checked by FiniteGroup
 	/// </summary>
 	/// <returns>The element that will give the identity added to this element</returns>
-	//Element inverse() const noexcept { return {}; };
+	Element inverse() const noexcept { return {}; };
 	/// <summary>
 	/// Creates all possible elements of the group
 	/// </summary>

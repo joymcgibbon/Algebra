@@ -9,7 +9,7 @@ struct Abelian : public Element {
 	Abelian() { val = 0; };
 	Abelian(size_t val) : val(val% num) {};
 	Abelian identity() { return Abelian(); };
-	//Abelian inverse() const { return Abelian(num - val); };
+	Abelian inverse() const { return Abelian(num - val); };
 	std::set<Abelian> generateAllElements() {
 		std::set<Abelian> result = { identity() };
 		for (size_t i = 1; i < num; ++i)
@@ -34,11 +34,11 @@ struct AbelianMult : public Abelian<num> {
 	AbelianMult() { val = 1; };
 	AbelianMult(size_t val) : val(val% num) {};
 	AbelianMult identity() { return AbelianMult(); };
-	/*AbelianMult inverse() const {
+	AbelianMult inverse() const {
 		size_t inverseVal;
 		for (inverseVal = 1; (inverseVal * val) % num != 1; ++inverseVal);
 		return { inverseVal };
-	};*/
+	};
 	std::set<AbelianMult> generateAllElements() {
 		std::set<AbelianMult> result = { identity() };
 		std::set<int> factors = operation::getFactors(num);
