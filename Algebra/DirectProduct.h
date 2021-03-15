@@ -4,25 +4,6 @@
 template<class... Ts> struct overload : Ts... { using Ts::operator()...; };
 template<class... Ts> overload(Ts...)->overload<Ts...>;
 
-/*struct GroupTypes {
-	template<class Ts> struct overload : Ts { using Ts::operator(); };
-	template<class Ts> overload(Ts)->overload<Ts>;
-
-	typedef std::variant<Zn::FullGroup, Sn> Groups;
-	typedef std::vector<allTypesVar> DirectProductType;
-	typedef std::variant<Zn::FullGroup::Element, Sn::Element> Elements;
-
-	static_assert(std::is_same_v <Zn::FullGroup, std::variant_alternative_t<Zn::FullGroup::GROUP_TYPE, Groups>>);
-	static_assert(std::is_same_v <Zn::FullGroup::Element, std::variant_alternative_t<Zn::FullGroup::GROUP_TYPE, Elements>>);
-
-	static_assert(std::is_same_v <Sn, std::variant_alternative_t<Sn::GROUP_TYPE, Groups>>);
-	static_assert(std::is_same_v <Sn::Element, std::variant_alternative_t<Sn::GROUP_TYPE, Elements>>);
-
-	//static_assert(std::is_same_v <DirectProduct, std::variant_alternative_t<2, Groups>>);
-	//static_assert(std::is_same_v <allTypesVar, std::variant_alternative_t<2, Elements>>);
-};*/
-
-
 enum Groups {
 
 };
@@ -64,14 +45,21 @@ struct DirectProduct : public Element {
 	};
 	DirectProduct inverse() const {
 		DirectProduct inverse;
-		std::apply([&](auto element, auto...ops) {
-			std::get<0>(inverse.vals) = element;
-			}, vals);
+		DirectProduct thisCpy = *this;
+		for_each(inverse.vals, thisCpy.vals,
+			[&](auto&& e1, auto&& e2) {
+				e1 = e2.inverse();
+			}
+		);
 		return inverse;
 	};
 	std::set<DirectProduct> generateAllElements() {
 		std::set<DirectProduct> result;
-		std::apply([&](auto&& element, auto...ops) {  result = crossProduct(result, element.generateAllElements()); }, vals);
+		for_each(vals,
+			[&](auto&& e1) {
+				result = crossProduct(result, e1.generateAllElements());
+			}
+		);
 		return result;
 	};
 
@@ -87,18 +75,23 @@ struct DirectProduct : public Element {
 		return result;
 	};
 
-	void operator=(const DirectProduct& other) noexcept { };
-	//void operator=(GeneralElement& other) noexcept { };
-	template <typename Element>
+	void operator=(const DirectProduct& other) noexcept { 
+		DirectProduct otherCpy = other;
+		for_each(vals, otherCpy.vals,
+			[&](auto&& e1, auto&& e2) {
+				e1 = e2;
+			}
+		);
+	};
+
 	friend bool operator==(const DirectProduct& lhs, const DirectProduct& rhs) noexcept {
-		bool result = true;
+		int result = true;
 		for_each(lhs.vals, rhs.vals,
 			[&](auto&& e1, auto&& e2) {
 				if (e1 != e2)
 					result = false;
 			}
 		);
-
 		return result;
 	}
 
@@ -107,13 +100,16 @@ struct DirectProduct : public Element {
 	}
 
 	friend bool operator<(const DirectProduct& lhs, const DirectProduct& rhs) noexcept {
+		int result = -1;
 		for_each(lhs.vals, rhs.vals,
 			[&](auto&& e1, auto&& e2) {
-				if (e1 != e2)
-					return e1 < e2;
+				if (e1 != e2 && result == -1)
+					result = e1 < e2;
 			}
 		);
-		return false;
+		if (result == -1)
+			result = false;
+		return result;
 	}
 
 	friend std::ostream& operator<<(std::ostream& out, const DirectProduct& element) {

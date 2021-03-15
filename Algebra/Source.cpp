@@ -6,10 +6,14 @@
 #include "Abelian.h"
 #include <iostream>
 
-typedef FiniteGroup<DirectProduct<Cyclic<2>, Abelian<2>>> TYPE;
+typedef FiniteGroup<DirectProduct<Abelian<3>>> TYPE;
 void printCosets(TYPE group, bool printElements = false, bool printCosets = true);
 void getAndPrintCosets(FiniteGroup<TYPE::Element>* group, TYPE::Subgroup subgroup, bool printElements = false, bool printCosets = true, bool printIfNotNormal = true);
 void printInverses(TYPE group);
+
+int main() {
+	printCosets(TYPE(), false, false);
+}
 
 void printCosets(TYPE group, bool printElements, bool printCosets) {
 	time_t start;
@@ -21,9 +25,18 @@ void printCosets(TYPE group, bool printElements, bool printCosets) {
 	time_t time = end - start;
 	time_t minutes = (int)(time / 60);
 	const time_t seconds = time - (minutes * 60);
-	std::cout << "\nTime: " << minutes << ':' << (seconds > 9? "" :"0") << seconds;
-	std::cout << "----------------------------------" << subgroups.size() << "----------------------------------\n";
+
 	std::cout << group << '\n';
+	for (auto subgroup : subgroups) {
+		std::cout << '<';
+		for (auto generator : subgroup.getGenerators()) {
+			std::cout << generator << ",";
+		}
+			std::cout << ">\t" << subgroup.order() << "\n";
+	}
+
+	std::cout << "\nTime: " << minutes << ':' << (seconds > 9 ? "" : "0") << seconds;
+	std::cout << "----------------------------------" << subgroups.size() << "----------------------------------\n";
 	/*
 	for (TYPE::Subgroup subgroup : subgroups) {
 		getAndPrintCosets(&group, subgroup, printElements, printCosets);

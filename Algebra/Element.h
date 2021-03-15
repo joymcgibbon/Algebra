@@ -11,8 +11,4 @@ struct Element {
 	 std::set<Element*> generateAllElementPtrs() { return {}; };
 	 Element operator+(const Element& other) const noexcept { return {}; };
 	void operator=(const Element& other) noexcept { };
-	friend bool operator==(const Element& lhs, const Element& rhs) noexcept { return false; }
-	friend bool operator!=(const Element& lhs, const Element& rhs) noexcept { return false; }
-	friend bool operator<(const Element& lhs, const Element& rhs) noexcept { return false; }
-	friend std::ostream& operator<<(std::ostream& out, const Element& element) { return out; }
 };

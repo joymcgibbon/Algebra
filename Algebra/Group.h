@@ -8,7 +8,7 @@
 #include <mutex>
 
 #ifndef NUM_PROCESSORS
-#define NUM_PROCESSORS 12
+#define NUM_PROCESSORS 1
 #endif
 
 template <typename Element>
@@ -23,6 +23,7 @@ public:
 			const size_t tmpSize = order();
 			for (const Element& original : elements) {
 				Element tmp = element;
+				int count = 0;
 				while (tmp != identityElement) {
 					const Element result = original + tmp;
 					insert(result);
