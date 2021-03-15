@@ -4,10 +4,6 @@
 template<class... Ts> struct overload : Ts... { using Ts::operator()...; };
 template<class... Ts> overload(Ts...)->overload<Ts...>;
 
-enum Groups {
-
-};
-
 struct GeneralElement : public Element {
 
 };
@@ -24,7 +20,7 @@ struct DirectProduct : public Element {
 		if (g1.empty()) {
 			for (const Element& e2 : g2) {
 				DirectProduct tmp;
-				std::get<Element>(tmp.vals) = e2;
+				std::get<0>(tmp.vals) = e2;
 				result.insert(tmp);
 			}
 			return result;
@@ -34,7 +30,12 @@ struct DirectProduct : public Element {
 		for (const DirectProduct& e1 : g1)
 			for (const Element& e2 : g2) {
 				DirectProduct tmp = e1;
-				std::get<Element>(tmp.vals) = std::get<Element>(tmp.vals) + e2;
+				std::get<1>(tmp.vals) = e2;
+				/*for_each(tmp.vals,
+					[&](auto&& e1) {
+						e1 = e1+ e2;
+					}
+				);*/
 				result.insert(tmp);
 			}
 		return result;

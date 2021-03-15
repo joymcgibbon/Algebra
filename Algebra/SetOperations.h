@@ -123,3 +123,4 @@ void for_each(Tuple&& t1, Tuple&& t2, Tuple&& t3, Func&& f) {
 		std::get<idx>(std::forward<Tuple>(t3))
 	); });
 }
+

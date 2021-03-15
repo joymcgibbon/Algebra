@@ -8,7 +8,7 @@
 #include <mutex>
 
 #ifndef NUM_PROCESSORS
-#define NUM_PROCESSORS 1
+#define NUM_PROCESSORS 12
 #endif
 
 template <typename Element>
@@ -69,24 +69,6 @@ public:
 	};
 	size_t order() const noexcept { return elements.size(); };
 	bool empty() const noexcept { return elements.empty(); };
-	std::set<Subgroup> generateAllSubgroups() noexcept {
-		if (elements.size() < 2)
-			generateAllElements();
-
-		// Threads concurrently find all possible combinations of elements
-		std::thread threads[NUM_PROCESSORS];
-		for (int i = 0; i < NUM_PROCESSORS; ++i) {
-			threads[i] = std::thread([&]() {
-				generateAllSubgroups(Subgroup(), order() / 2, elements.begin());
-			});
-		}
-
-		for (int i = 0; i < NUM_PROCESSORS; ++i)
-			threads[i].join();
-
-		subgroups.insert(Subgroup(*this));
-		return subgroups;
-	}
 	void generateCyclicSubgroups() {
 		for (const Element& factor : elements) {
 			Element tmp = factor;
@@ -129,6 +111,24 @@ public:
 			}
 		}
 		return result;
+	}
+	std::set<Subgroup> generateAllSubgroups() noexcept {
+		if (elements.size() < 2)
+			generateAllElements();
+
+		// Threads concurrently find all possible combinations of elements
+		std::thread threads[NUM_PROCESSORS];
+		for (int i = 0; i < NUM_PROCESSORS; ++i) {
+			threads[i] = std::thread([&]() {
+				generateAllSubgroups(Subgroup(), order() / 2, elements.begin());
+				});
+		}
+
+		for (int i = 0; i < NUM_PROCESSORS; ++i)
+			threads[i].join();
+
+		subgroups.insert(Subgroup(*this));
+		return subgroups;
 	}
 	friend bool operator<(const FiniteGroup& lhs, const FiniteGroup& rhs) noexcept {
 		if (lhs.elements.size() != rhs.elements.size())

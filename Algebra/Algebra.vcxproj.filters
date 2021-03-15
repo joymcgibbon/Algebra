@@ -33,6 +33,9 @@
     <ClInclude Include="Abelian.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Subgroup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">

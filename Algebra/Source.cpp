@@ -6,7 +6,8 @@
 #include "Abelian.h"
 #include <iostream>
 
-typedef FiniteGroup<DirectProduct<Abelian<3>>> TYPE;
+
+typedef FiniteGroup<DirectProduct<Abelian<4>, Abelian<4>>> TYPE;
 void printCosets(TYPE group, bool printElements = false, bool printCosets = true);
 void getAndPrintCosets(FiniteGroup<TYPE::Element>* group, TYPE::Subgroup subgroup, bool printElements = false, bool printCosets = true, bool printIfNotNormal = true);
 void printInverses(TYPE group);

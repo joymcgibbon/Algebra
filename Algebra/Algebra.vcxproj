@@ -152,6 +152,7 @@
     <ClInclude Include="Group.h" />
     <ClInclude Include="Cyclic.h" />
     <ClInclude Include="SetOperations.h" />
+    <ClInclude Include="Subgroup.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp" />
