@@ -30,6 +30,7 @@ enum Groups {
 struct GeneralElement : public Element {
 
 };
+
 template <typename ... GeneralElement>
 struct DirectProduct : public Element {
 	std::tuple<GeneralElement...> vals;
@@ -64,31 +65,26 @@ struct DirectProduct : public Element {
 	DirectProduct inverse() const {
 		DirectProduct inverse;
 		std::apply([&](auto element, auto...ops) {
-			inverse = element.inverse();
+			std::get<0>(inverse.vals) = element;
 			}, vals);
 		return inverse;
 	};
 	std::set<DirectProduct> generateAllElements() {
 		std::set<DirectProduct> result;
-		//result.insert(identity());
-		std::apply([&](auto element, auto...ops) {  result = crossProduct(result, element.generateAllElements()); }, vals);
+		std::apply([&](auto&& element, auto...ops) {  result = crossProduct(result, element.generateAllElements()); }, vals);
 		return result;
 	};
 
 	DirectProduct operator+(const DirectProduct& other) const {
 		DirectProduct result;
-		std::apply([&](auto element, auto...ops) { result += element; }, vals);
+		DirectProduct thisCpy = *this;
+		DirectProduct otherCpy = other;
+		for_each(result.vals, thisCpy.vals, otherCpy.vals,
+			[&](auto&& e1, auto&& e2, auto&& e3) {
+				e1 = e2 + e3;
+			}
+		);
 		return result;
-	};
-
-	template <typename Element>
-	void operator+=(const Element& other) {
-		std::get<Element>(vals) = std::get<Element>(vals) + other;
-	};
-
-	template <typename Element>
-	void operator=(const Element& other) {
-		std::get<Element>(vals) = other;
 	};
 
 	void operator=(const DirectProduct& other) noexcept { };
@@ -96,75 +92,44 @@ struct DirectProduct : public Element {
 	template <typename Element>
 	friend bool operator==(const DirectProduct& lhs, const DirectProduct& rhs) noexcept {
 		bool result = true;
-		std::apply([&](auto element, auto...ops) {
-			result &= (element == std::get<Element>(vals));
-		}, lhs.vals);
-		return result;
+		for_each(lhs.vals, rhs.vals,
+			[](auto&& e1, auto&& e2) {
+				if (e1 != e2)
+					return false;
+			}
+		);
+
+		return true;
 	}
 
 	friend bool operator!=(const DirectProduct& lhs, const DirectProduct& rhs) noexcept {
 		return !(lhs == rhs);
 	}
 
-	template <typename Element>AAA
 	friend bool operator<(const DirectProduct& lhs, const DirectProduct& rhs) noexcept {
-		bool result = false;
-		std::apply([&](auto element, auto...ops) {
-			result |= element < std::get<Element>(rhs.vals);
-		}, lhs.vals);
-		return result;
+		for_each(lhs.vals, rhs.vals,
+			[&](auto&& e1, auto&& e2) {
+				if (e1 != e2)
+					return e1 < e2;
+			}
+		);
+		return false;
 	}
+
 	friend std::ostream& operator<<(std::ostream& out, const DirectProduct& element) {
-		/*out << "{";
+		out << "(";
 		bool first = true;
-		for (int i = 0; i < element.val.size(); ++i) {
-			if (first)
-				first = false;
-			else
-				out << ',';
-			out << element.val[i];
-		}
-		out << "}";*/
+		for_each(element.vals,
+			[&](auto&& e) { 
+				if (first)
+					first = false;
+				else
+					out << ',';
+				out << e;
+			}
+		);
+
+		std::cout << ')';
 		return out;
 	}
-
-	//GeneralElement operator[](const int index) noexcept { return val[index]; };
-	//const GeneralElement operator[](const int index) const noexcept { return val[index]; };
-	//size_t size() const noexcept { return val.size(); }
-	//GeneralElement operator[](const int& index) const noexcept { return val[index]; };
-private:
-	//GeneralElement& operator[](const int& index) noexcept { return val[index]; };
 };
-
-
-
-/*class DirectProduct : public FiniteGroup<std::vector<Element*>> {
-public:
-	DirectProduct() : {};
-	template <class T>
-	std::set<Element> crossProduct(std::set<Element> g1, std::set<T> g2);
-	template <class T>
-	void crossProduct(Group<T>& other) { this->elements = crossProduct(this->elements, other.getElements());}
-	std::set<Element> generateAllElements() override;
-	Element identity() const override;
-	Element inverseHelper(const Element element) const;
-	size_t getOrder() const override;
-	Element add(const Element& g1, const Element& g2) const override;
-	void print(std::ostream& out, const Element& element) const override;
-	friend std::ostream& operator<<(std::ostream& out, DirectProduct& group) {
-		out << "\\{";
-		bool first = true;
-		for (Element element : group.getElements()) {
-			if (first)
-				first = false;
-			else
-				out << ',';
-			group.print(out, element);
-		}
-		out << "\\}";
-		return out;
-	}
-private:
-	std::vector<GroupTypes::Groups> groups;
-};*/
-

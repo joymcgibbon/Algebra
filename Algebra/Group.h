@@ -8,7 +8,7 @@
 #include <mutex>
 
 #ifndef NUM_PROCESSORS
-#define NUM_PROCESSORS 1
+#define NUM_PROCESSORS 12
 #endif
 
 template <typename Element>

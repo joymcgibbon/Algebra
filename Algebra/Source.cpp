@@ -71,8 +71,8 @@ void printCosets(TYPE group, bool printElements, bool printCosets) {
 	time_t minutes = (int)(time / 60);
 	const time_t seconds = time - (minutes * 60);
 	std::cout << "\nTime: " << minutes << ':' << (seconds > 9? "" :"0") << seconds;
-
 	std::cout << "----------------------------------" << subgroups.size() << "----------------------------------\n";
+	std::cout << group << '\n';
 	/*
 	for (TYPE::Subgroup subgroup : subgroups) {
 		getAndPrintCosets(&group, subgroup, printElements, printCosets);

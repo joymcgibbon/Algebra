@@ -2,7 +2,7 @@
 #include "SetOperations.h"
 #include <iostream>
 
-struct Element : public mallocator<Element> {
+struct Element {
 	Element() {};
 	 Element operator&()  const noexcept { return Element(); };
 	 Element inverse() const noexcept { return {}; };
