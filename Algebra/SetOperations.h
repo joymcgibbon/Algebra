@@ -2,6 +2,7 @@
 #include <set>
 #include <vector>
 #include <omp.h>
+#include "DirectProduct.h"
 
 namespace operation {
 	template <typename T>
@@ -37,26 +38,6 @@ namespace operation {
 				vector[i].insert(*itr++);
 				++count;
 			}
-
-		while (count++ < set.size())
-			vector.back().insert(*itr++);
-		return vector;
-	}
-
-	template <typename T>
-	std::vector<std::set<T>> partitionsEvenDist(std::set<T> set, int partitions) {
-		std::vector<std::set<T>>  vector;
-		if (partitions < 1)
-			return vector;
-		vector.resize(partitions);
-		auto itr = set.begin();
-		size_t count = 0;
-		for (size_t j = 0; j < set.size() / partitions; ++j) {
-			for (int i = 0; i < partitions; ++i) {
-				vector[i].insert(*itr++);
-				++count;
-			}
-		}
 
 		while (count++ < set.size())
 			vector.back().insert(*itr++);
@@ -126,12 +107,12 @@ void for_each(Tuple&& t, Func&& f) {
 }
 
 // modified for 2 tuples
-/*template <typename Tuple, typename Func>
-void for_each(Tuple&& t1, Tuple&& t2, Func&& f) {
+template <typename Tuple, typename Func>
+void for_each2(Tuple&& t1, Tuple&& t2, Func&& f) {
 	constexpr auto n = std::tuple_size<std::decay_t<Tuple>>::value;
 	auto dispatcher = make_index_dispatcher<n>();
 	dispatcher([&f, &t1, &t2](auto idx) { f(std::get<idx>(std::forward<Tuple>(t1)), std::get<idx>(std::forward<Tuple>(t2))); });
-}*/
+}
 
 // modified for 3 tuples
 template <typename Tuple, typename Func>
@@ -139,9 +120,8 @@ void for_each(Tuple&& t1, Tuple&& t2, Tuple&& t3, Func&& f) {
 	constexpr auto n = std::tuple_size<std::decay_t<Tuple>>::value;
 	auto dispatcher = make_index_dispatcher<n>();
 	dispatcher([&f, &t1, &t2, &t3](auto idx) { f(
-		std::get<idx>(std::forward<Tuple>(t1)), 
+		std::get<idx>(std::forward<Tuple>(t1)),
 		std::get<idx>(std::forward<Tuple>(t2)),
 		std::get<idx>(std::forward<Tuple>(t3))
 	); });
 }
-

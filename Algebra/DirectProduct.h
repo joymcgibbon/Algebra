@@ -11,51 +11,22 @@ struct GeneralElement : public Element {
 template <typename ... GeneralElement>
 struct DirectProduct : public Element {
 	std::tuple<GeneralElement...> vals;
-
+	typedef std::tuple<GeneralElement...> TupleType;
 	DirectProduct() : vals() {};
-
-	template <typename Element>
-	std::set<DirectProduct> crossProduct(std::set<DirectProduct> g1, std::set<Element> g2) {
-		std::set<DirectProduct> result;
-		if (g1.empty()) {
-			for (const Element& e2 : g2) {
-				DirectProduct tmp;
-				std::get<0>(tmp.vals) = e2;
-				result.insert(tmp);
-			}
-			return result;
-		}
-		if (g2.empty())
-			return g1;
-		for (const DirectProduct& e1 : g1)
-			for (const Element& e2 : g2) {
-				DirectProduct tmp = e1;
-				std::get<1>(tmp.vals) = e2;
-				result.insert(tmp);
-			}
-		return result;
-	}
-
-	DirectProduct identity() {
-		return DirectProduct();
-	};
 	DirectProduct inverse() const {
 		DirectProduct inverse;
 		DirectProduct thisCpy = *this;
-		for_each(inverse.vals, thisCpy.vals,
+		for_each2(inverse.vals, thisCpy.vals,
 			[&](auto&& e1, auto&& e2) {
 				e1 = e2.inverse();
 			}
 		);
 		return inverse;
 	};
+
 	std::set<DirectProduct> generateAllElements() {
 		std::set<DirectProduct> result;
-		for_each(vals,
-			[&](auto&& e1) {
-				result = crossProduct(result, e1.generateAllElements());
-			}
-		);
+		loopTuple<std::tuple_size<TupleType>::value - 1>::crossProd(vals, result);
 		return result;
 	};
 
@@ -71,9 +42,9 @@ struct DirectProduct : public Element {
 		return result;
 	};
 
-	void operator=(const DirectProduct& other) noexcept { 
+	void operator=(const DirectProduct& other) noexcept {
 		DirectProduct otherCpy = other;
-		for_each(vals, otherCpy.vals,
+		for_each2(vals, otherCpy.vals,
 			[&](auto&& e1, auto&& e2) {
 				e1 = e2;
 			}
@@ -82,7 +53,7 @@ struct DirectProduct : public Element {
 
 	friend bool operator==(const DirectProduct& lhs, const DirectProduct& rhs) noexcept {
 		int result = true;
-		for_each(lhs.vals, rhs.vals,
+		for_each2(lhs.vals, rhs.vals,
 			[&](auto&& e1, auto&& e2) {
 				if (e1 != e2)
 					result = false;
@@ -97,7 +68,7 @@ struct DirectProduct : public Element {
 
 	friend bool operator<(const DirectProduct& lhs, const DirectProduct& rhs) noexcept {
 		int result = -1;
-		for_each(lhs.vals, rhs.vals,
+		for_each2(lhs.vals, rhs.vals,
 			[&](auto&& e1, auto&& e2) {
 				if (e1 != e2 && result == -1)
 					result = e1 < e2;
@@ -112,7 +83,7 @@ struct DirectProduct : public Element {
 		out << "(";
 		bool first = true;
 		for_each(element.vals,
-			[&](auto&& e) { 
+			[&](auto&& e) {
 				if (first)
 					first = false;
 				else
@@ -124,4 +95,33 @@ struct DirectProduct : public Element {
 		std::cout << ')';
 		return out;
 	}
+private:
+	template <int num>
+	static void crossProduct(TupleType& vals, std::set<DirectProduct>& result) {
+		if (result.empty()) {
+			for (const auto& e2 : std::get<num>(vals).generateAllElements()) {
+				DirectProduct tmp;
+				std::get<num>(tmp.vals) = e2;
+				result.insert(tmp);
+			}
+		}
+		else for (const DirectProduct& e1 : result)
+			for (const auto& e2 : std::get<num>(vals).generateAllElements()) {
+				DirectProduct tmp = e1;
+				std::get<num>(tmp.vals) = e2;
+				result.insert(tmp);
+			}
+	}
+
+	template<std::size_t remaining>
+	struct loopTuple {
+		static void crossProd(TupleType& vals, std::set<DirectProduct>& result) {
+			crossProduct<remaining>(vals, result);
+			loopTuple<remaining - 1>::crossProd(vals, result);
+		}
+	};
+	template<>
+	struct loopTuple<-1> {
+		static void crossProd(TupleType& vals, std::set<DirectProduct>& result) {};
+	};
 };

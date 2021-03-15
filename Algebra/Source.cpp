@@ -7,7 +7,7 @@
 #include <iostream>
 
 
-typedef FiniteGroup<Cyclic<6>> TYPE;
+typedef FiniteGroup<DirectProduct<Cyclic<3>, Cyclic<3>>> TYPE;
 //typedef FiniteGroup<Cyclic<6>> TYPE;
 void printCosets(TYPE group, bool printElements = false, bool printCosets = true);
 void getAndPrintCosets(FiniteGroup<TYPE::Element>* group, TYPE::Subgroup subgroup, bool printElements = false, bool printCosets = true, bool printIfNotNormal = true);
