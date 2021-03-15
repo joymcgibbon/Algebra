@@ -7,13 +7,32 @@
 #include <iostream>
 
 
-typedef FiniteGroup<DirectProduct<Abelian<4>, Abelian<4>>> TYPE;
+typedef FiniteGroup<Cyclic<6>> TYPE;
+//typedef FiniteGroup<Cyclic<6>> TYPE;
 void printCosets(TYPE group, bool printElements = false, bool printCosets = true);
 void getAndPrintCosets(FiniteGroup<TYPE::Element>* group, TYPE::Subgroup subgroup, bool printElements = false, bool printCosets = true, bool printIfNotNormal = true);
 void printInverses(TYPE group);
 
 int main() {
-	printCosets(TYPE(), false, false);
+	try {
+		time_t start;
+		time_t end;
+		time(&start);
+		TYPE group;
+		time(&start);
+		group.generateAllElements();
+		printInverses(group);
+		time(&end);
+		printCosets(TYPE(), false, false);
+
+		time_t time = end - start;
+		time_t minutes = (int)(time / 60);
+		const time_t seconds = time - (minutes * 60);
+		std::cout << "\nTime: " << minutes << ':' << (seconds > 9 ? "" : "0") << seconds;
+	}
+	catch (std::invalid_argument e) {
+		std::cout << e.what();
+	}
 }
 
 void printCosets(TYPE group, bool printElements, bool printCosets) {
@@ -97,7 +116,7 @@ void getAndPrintCosets(TYPE* group, TYPE::Subgroup subgroup, bool printElements,
 void printInverses(TYPE group) {
 	for (const auto& element : group.getInverses()) {
 		std::cout << element.first;
-		std::cout << "^-1 = ";
+		std::cout << "^-1=\t";
 		std::cout << element.second;
 		std::cout << "\n";
 

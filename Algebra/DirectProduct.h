@@ -31,11 +31,6 @@ struct DirectProduct : public Element {
 			for (const Element& e2 : g2) {
 				DirectProduct tmp = e1;
 				std::get<1>(tmp.vals) = e2;
-				/*for_each(tmp.vals,
-					[&](auto&& e1) {
-						e1 = e1+ e2;
-					}
-				);*/
 				result.insert(tmp);
 			}
 		return result;

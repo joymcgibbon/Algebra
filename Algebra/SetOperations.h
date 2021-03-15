@@ -84,6 +84,27 @@ namespace operation {
 			}
 		return result;
 	}
+
+	std::set<int> getFactors(const int val) {
+		if (val == 0)
+			return { 0 };
+		std::set<int> factors = { 1 };
+
+		int tmp = val;
+		for (; tmp % 2 == 0; tmp = tmp / 2) {
+			factors.insert(2);
+			factors.insert(tmp);
+		}
+		for (int i = 3; i <= sqrt(tmp); i += 2)
+			for (; tmp % i == 0; tmp = tmp / i) {
+				factors.insert(i);
+				factors.insert(val);
+			}
+		if (tmp > 2)
+			factors.insert(tmp);
+
+		return factors;
+	}
 }
 
 // copied from https://blog.tartanllama.xyz/exploding-tuples-fold-expressions/ 
@@ -105,12 +126,12 @@ void for_each(Tuple&& t, Func&& f) {
 }
 
 // modified for 2 tuples
-template <typename Tuple, typename Func>
+/*template <typename Tuple, typename Func>
 void for_each(Tuple&& t1, Tuple&& t2, Func&& f) {
 	constexpr auto n = std::tuple_size<std::decay_t<Tuple>>::value;
 	auto dispatcher = make_index_dispatcher<n>();
 	dispatcher([&f, &t1, &t2](auto idx) { f(std::get<idx>(std::forward<Tuple>(t1)), std::get<idx>(std::forward<Tuple>(t2))); });
-}
+}*/
 
 // modified for 3 tuples
 template <typename Tuple, typename Func>

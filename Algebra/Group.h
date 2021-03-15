@@ -33,26 +33,25 @@ public:
 				}
 			}
 			// If elements have been added the new element is a generator
-			if (tmpSize != order()) {
+			if (tmpSize != order())
 				generators.push_back(element);
-			}
 		}
 		bool valid(FiniteGroup group) const {
 			if (elements.empty() || elements.size() > group.order() / 2 || group.elements.size() % elements.size() != 0)
 				return false;
 			for (const Element& a : elements)
 				for (const Element& b : elements) {
-					if (elements.find(a + b.inverse()) == elements.end())
+					if (elements.find(a + group.inverses[b]) == elements.end())
 						return false;
 				}
 			return true;
 		};
 		//void operator=(const Subgroup& other) noexcept { elements = other.elements; };
 		void insertGenerator(Element generator) { generators.push_back(generator); }
-		std::vector<Element> getGenerators() { 
+		std::vector<Element> getGenerators() {
 			if (generators.size() > 1 && generators[0] == identityElement)
 				generators.erase(generators.begin());
-			return generators; 
+			return generators;
 		};
 	private:
 		std::vector<Element> generators;
@@ -61,14 +60,38 @@ public:
 	FiniteGroup(const FiniteGroup& group) : identityElement(Element()) { elements = group.elements; };
 	inline bool isIdentity(Element& e) const noexcept { return e == identityElement; };
 	std::set<Element> getElements() const noexcept { return elements; };
-	std::map<Element, Element> getInverses() const noexcept {
-		std::map<Element, Element> inverses;
-		for (Element element : elements)
-			inverses.insert({ element, element.inverse() });
+	std::map<Element, Element> getInverses() noexcept {
+		std::set<Element> notFound = elements;
+		for (const Element& element : elements)
+			for (const Element& element2 : elements)
+				if (element + element2 == identityElement)
+					inverses.insert({ element, element2 });
 		return inverses;
 	};
 	size_t order() const noexcept { return elements.size(); };
 	bool empty() const noexcept { return elements.empty(); };
+	bool validIdentity() const {
+		for (const Element& element : elements)
+			if (element + identityElement != element || identityElement + element != element)
+				return false;
+		return true;
+	};
+	bool closed() const {
+		for (const Element& a : elements)
+			for (const Element& b : elements)
+				if (elements.find(a + b) == elements.end())
+					return false;
+		return true;
+	};
+	bool validInverses() const {
+		for (const Element& element : elements) {
+			Element inverse = element.inverse();
+			Element result = element + inverse;
+			if (result != identityElement)
+				return false;
+		}
+		return true;
+	};
 	void generateCyclicSubgroups() {
 		for (const Element& factor : elements) {
 			Element tmp = factor;
@@ -112,7 +135,7 @@ public:
 		}
 		return result;
 	}
-	std::set<Subgroup> generateAllSubgroups() noexcept {
+	std::set<Subgroup> generateAllSubgroups() {
 		if (elements.size() < 2)
 			generateAllElements();
 
@@ -161,12 +184,25 @@ public:
 		out << "}";
 		return out;
 	}
-protected:
+	void generateAllElements() {
+		elements = identityElement.generateAllElements();
+
+		if (empty())
+			throw std::invalid_argument("Group is not valid: Must not be empty.");
+		if (!validIdentity())
+			throw std::invalid_argument("Group is not valid: Identity element is not the identity.");
+		if (!closed())
+			throw std::invalid_argument("Group is not valid: Must be closed.");
+		//	if (!validInverses())
+		//		throw std::invalid_argument("Group is not valid: Inverses are not inverses.");
+		getInverses();
+	};
+private:
+	std::map<Element, Element> inverses;
 	std::mutex writelock;
 	Element identityElement;
 	std::set<Element> elements;
 	std::set<Subgroup> subgroups;
-	void generateAllElements() noexcept { elements = identityElement.generateAllElements(); };
 	inline bool insert(const Element& g1) noexcept { return elements.insert(g1).second; };
 	inline bool insert(const Subgroup& subgroup) noexcept {
 		const std::lock_guard<std::mutex> lock(writelock);

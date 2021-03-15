@@ -21,21 +21,15 @@ struct Cyclic : public Element {
 	};
 	Cyclic operator&() const noexcept { return Cyclic(num); };
 #endif
-	Cyclic identity() noexcept {
-		Cyclic result;
-		for (int i = 0; i < num; ++i)
-			result[i] = i + 1;
-		return result;
-	};
-	Cyclic inverse() const noexcept {
+	/*Cyclic inverse() const noexcept {
 		Cyclic result;
 		for (int index = 0; index < num; ++index)
 			result[index] = val[val[index] - 1];
 		return result;
-	};
+	};*/
 	std::set<Cyclic> generateAllElements() {
-		std::set<Cyclic> result = { identity() };
-		permute(result, inverse(), 0, num - 1);
+		std::set<Cyclic> result = { Cyclic() };
+		permute(result, Cyclic(), 0, num - 1);
 		return result;
 	};
 	Cyclic operator+(const Cyclic& other) const noexcept {
@@ -71,6 +65,10 @@ struct Cyclic : public Element {
 				out << v;
 			out << ")";
 		}
+
+		/*for (int index = 0; index < num; ++index)
+			out << element.val[index];*/
+
 		return out;
 	};
 
