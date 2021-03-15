@@ -16,12 +16,6 @@ struct Abelian : public Element {
 			result.insert({ i });
 		return result;
 	};
-	static std::set<Element*> generateAllElementPtrs() {
-		std::set<Element*> result = { &identity() };
-		for (size_t i = 0; i < num; ++i)
-			result.insert(&Abelian{ i });
-		return result;
-	};
 	Abelian operator+(const Abelian& other) const { return Abelian(val + other.val); };
 	void operator=(const Abelian& other) noexcept { val = other.val; };
 	friend bool operator==(const Abelian& lhs, const Abelian& rhs) noexcept { return lhs.val == rhs.val; }

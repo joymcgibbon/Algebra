@@ -11,55 +11,6 @@ void printCosets(TYPE group, bool printElements = false, bool printCosets = true
 void getAndPrintCosets(FiniteGroup<TYPE::Element>* group, TYPE::Subgroup subgroup, bool printElements = false, bool printCosets = true, bool printIfNotNormal = true);
 void printInverses(TYPE group);
 
-#include <omp.h>
-
-int FibHelp(int n);
-int SerialFib(int n);
-
-// Creates parallel section and calls FibHelp to calculate Fibonnaci number
-int OpenMPFib(int n) {
-	int res;
-
-#pragma omp parallel 
-#pragma omp single  
-	res = FibHelp(n);
-
-	return res;
-}
-
-// Helper function to create tasks to calculate fibonacci numbers
-int FibHelp(int n) {
-	if (n < 18)
-		return SerialFib(n);
-
-	int n1, n2;
-
-#pragma omp task shared(n1) 
-	{
-		n1 = FibHelp(n - 1);
-		std::cout << omp_get_thread_num() << '\n';
-	}
-
-	n2 = FibHelp(n - 2);
-
-//#pragma omp taskwait
-	return n1 + n2;
-}
-
-// Serial version of Fib to handle small n efficiently
-int SerialFib(int n) {
-	if (n < 2) {
-		return n;
-	}
-	else {
-		return SerialFib(n - 1) + SerialFib(n - 2);
-	}
-}
-int main() {
-	//FibHelp(100);
-	printCosets(TYPE(), false, false);
-}
-
 void printCosets(TYPE group, bool printElements, bool printCosets) {
 	time_t start;
 	time_t end;

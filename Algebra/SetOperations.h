@@ -86,20 +86,6 @@ namespace operation {
 	}
 }
 
-template <class T>
-struct threadsafeSet {
-	threadsafeSet() { omp_init_lock(&writelock); };
-	inline bool insert(const T& item) noexcept {
-		omp_set_lock(&writelock);
-		const bool inserted = set.insert(item).second;
-		omp_unset_lock(&writelock);
-		return inserted;
-	};
-	std::set<T> set;
-	omp_lock_t writelock;
-};
-
-
 // copied from https://blog.tartanllama.xyz/exploding-tuples-fold-expressions/ 
 template <size_t... Idx>
 auto make_index_dispatcher(std::index_sequence<Idx...>) {
@@ -126,7 +112,7 @@ void for_each(Tuple&& t1, Tuple&& t2, Func&& f) {
 	dispatcher([&f, &t1, &t2](auto idx) { f(std::get<idx>(std::forward<Tuple>(t1)), std::get<idx>(std::forward<Tuple>(t2))); });
 }
 
-// modified for 2 tuples
+// modified for 3 tuples
 template <typename Tuple, typename Func>
 void for_each(Tuple&& t1, Tuple&& t2, Tuple&& t3, Func&& f) {
 	constexpr auto n = std::tuple_size<std::decay_t<Tuple>>::value;

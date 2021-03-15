@@ -151,7 +151,6 @@
     <ClInclude Include="Element.h" />
     <ClInclude Include="Group.h" />
     <ClInclude Include="Cyclic.h" />
-    <ClInclude Include="Multithreaded.h" />
     <ClInclude Include="SetOperations.h" />
   </ItemGroup>
   <ItemGroup>

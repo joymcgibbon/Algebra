@@ -93,13 +93,13 @@ struct DirectProduct : public Element {
 	friend bool operator==(const DirectProduct& lhs, const DirectProduct& rhs) noexcept {
 		bool result = true;
 		for_each(lhs.vals, rhs.vals,
-			[](auto&& e1, auto&& e2) {
+			[&](auto&& e1, auto&& e2) {
 				if (e1 != e2)
-					return false;
+					result = false;
 			}
 		);
 
-		return true;
+		return result;
 	}
 
 	friend bool operator!=(const DirectProduct& lhs, const DirectProduct& rhs) noexcept {
