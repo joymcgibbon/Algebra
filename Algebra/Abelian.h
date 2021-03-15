@@ -5,7 +5,7 @@
 template <size_t num>
 struct Abelian : public Element {
 	//using value_type = size_t;
-	size_t val;
+	unsigned int val;
 	Abelian() { val = 0; };
 	Abelian(size_t val) : val(val% num) {};
 	Abelian identity() { return Abelian(); };
@@ -30,12 +30,12 @@ struct Abelian : public Element {
 template <size_t num>
 struct AbelianMult : public Abelian<num> {
 	//using value_type = size_t;
-	size_t val;
+	unsigned int val;
 	AbelianMult() { val = 1; };
 	AbelianMult(size_t val) : val(val% num) {};
 	AbelianMult identity() { return AbelianMult(); };
 	AbelianMult inverse() const {
-		size_t inverseVal;
+		unsigned int inverseVal;
 		for (inverseVal = 1; (inverseVal * val) % num != 1; ++inverseVal);
 		return { inverseVal };
 	};

@@ -24,7 +24,7 @@ struct Cyclic : public Element {
 	Cyclic inverse() const noexcept {
 		Cyclic result;
 		for (int index = 0; index < num; ++index)
-			result[index] = getIdx(getIdx(index + 1) + 1);
+			result[index] = getIdx(index + 1);
 		return result;
 	};
 	std::set<Cyclic> generateAllElements() {
@@ -59,10 +59,10 @@ struct Cyclic : public Element {
 	};
 	inline int getResult(const int& num) const noexcept { return val[num - 1]; }	
 	inline int getIdx(const int& n) const noexcept { 
-		for (int i = 0; i < n; ++i)
+		for (int i = 0; i < num; ++i)
 			if (val[i] == n)
-				return i;
-		return -1; 
+				return i + 1;
+		return 0; 
 	}
 	friend std::ostream& operator<<(std::ostream& out, const Cyclic& element) {
 		for (std::vector<int> val : getCyclicRep(element)) {
@@ -71,9 +71,8 @@ struct Cyclic : public Element {
 				out << v;
 			out << ")";
 		}
-		/*out << '\t';
-		for (int index = 0; index < num; ++index)
-			out << element.val[index];*/
+
+		//out << '\t'; for (int index = 0; index < num; ++index) out << element.val[index];
 
 		return out;
 	};

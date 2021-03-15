@@ -46,7 +46,6 @@ public:
 				}
 			return true;
 		};
-		//void operator=(const Subgroup& other) noexcept { elements = other.elements; };
 		void insertGenerator(Element generator) { generators.push_back(generator); }
 		std::vector<Element> getGenerators() {
 			if (generators.size() > 1 && generators[0] == identityElement)
@@ -61,6 +60,7 @@ public:
 	inline bool isIdentity(Element& e) const noexcept { return e == identityElement; };
 	std::set<Element> getElements() const noexcept { return elements; };
 	std::map<Element, Element> getInverses() noexcept {
+		std::map<Element, Element> inverses;
 		for (const Element& element : elements) {
 			for (const Element& element2 : elements)
 				if (element + element2 == identityElement)
@@ -84,12 +84,9 @@ public:
 		return true;
 	};
 	bool validInverses() const {
-		for (const Element& element : elements) {
-			Element inverse = element.inverse();
-			Element result = element + inverse;
-			if (result != identityElement)
+		for (const Element& element : elements)
+			if (element + element.inverse() != identityElement)
 				return false;
-		}
 		return true;
 	};
 	void generateCyclicSubgroups() {
@@ -141,14 +138,13 @@ public:
 
 		// Threads concurrently find all possible combinations of elements
 		std::thread threads[NUM_PROCESSORS];
-		for (int i = 0; i < NUM_PROCESSORS; ++i) {
-			threads[i] = std::thread([&]() {
+		for (std::thread& thread : threads)
+			thread = std::thread([&]() {
 				generateAllSubgroups(Subgroup(), order() / 2, elements.begin());
-				});
-		}
+			});
 
-		for (int i = 0; i < NUM_PROCESSORS; ++i)
-			threads[i].join();
+		for (std::thread& thread : threads)
+			thread.join();
 
 		subgroups.insert(Subgroup(*this));
 		return subgroups;
@@ -186,19 +182,18 @@ public:
 	}
 	void generateAllElements() {
 		elements = identityElement.generateAllElements();
-
+#ifdef _DEBUG
 		if (empty())
 			throw std::invalid_argument("Group is not valid: Must not be empty.");
 		if (!validIdentity())
 			throw std::invalid_argument("Group is not valid: Identity element is not the identity.");
 		if (!closed())
 			throw std::invalid_argument("Group is not valid: Must be closed.");
-		//	if (!validInverses())
-		//		throw std::invalid_argument("Group is not valid: Inverses are not inverses.");
-		getInverses();
+		if (!validInverses())
+			throw std::invalid_argument("Group is not valid: Inverses are not inverses.");
+#endif
 	};
 private:
-	std::map<Element, Element> inverses;
 	std::mutex writelock;
 	Element identityElement;
 	std::set<Element> elements;
