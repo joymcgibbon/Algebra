@@ -7,72 +7,71 @@
 #include <thread>
 #include <mutex>
 
-#ifndef NUM_PROCESSORS
-#define NUM_PROCESSORS 12
-#endif
-
+/// <summary>
+/// A representation of a finite group that can generate subgroups and cosets from any Element
+/// </summary>
+/// <typeparam name="Element">The type of element this group operates on</typeparam>
 template <typename Element>
 class FiniteGroup {
 public:
 	typedef Element Element;
-	class Subgroup : public FiniteGroup {
-	public:
-		Subgroup() : FiniteGroup() { insert(identityElement); }
-		Subgroup(const FiniteGroup& group) : FiniteGroup(group) {};
-		void insertElement(const Element& element) {
-			const size_t tmpSize = order();
-			for (const Element& original : elements) {
-				Element tmp = element;
-				int count = 0;
-				while (tmp != identityElement) {
-					const Element result = original + tmp;
-					insert(result);
-					insert(tmp + original);
-					tmp = tmp + element;
-					insert(tmp);
-				}
-			}
-			// If elements have been added the new element is a generator
-			if (tmpSize != order())
-				generators.push_back(element);
-		}
-		bool valid(FiniteGroup group) const {
-			if (elements.empty() || elements.size() > group.order() / 2 || group.elements.size() % elements.size() != 0)
-				return false;
-			for (const Element& a : elements)
-				for (const Element& b : elements) {
-					if (elements.find(a + b.inverse()) == elements.end())
-						return false;
-				}
-			return true;
-		};
-		void insertGenerator(Element generator) { generators.push_back(generator); }
-		std::vector<Element> getGenerators() {
-			if (generators.size() > 1 && generators[0] == identityElement)
-				generators.erase(generators.begin());
-			return generators;
-		};
-	private:
-		std::vector<Element> generators;
+	friend struct GroupOperations;
+
+	const Element identity;
+	FiniteGroup() : identity(Element()) { insert(identity); };
+	FiniteGroup(const FiniteGroup& group) : identity(Element()) {
+		elements = group.elements;
 	};
-	FiniteGroup() : identityElement(Element()) { };
-	FiniteGroup(const FiniteGroup& group) : identityElement(Element()) { elements = group.elements; };
-	inline bool isIdentity(Element& e) const noexcept { return e == identityElement; };
-	std::set<Element> getElements() const noexcept { return elements; };
-	std::map<Element, Element> getInverses() noexcept {
-		std::map<Element, Element> inverses;
-		for (const Element& element : elements) {
-			for (const Element& element2 : elements)
-				if (element + element2 == identityElement)
-					inverses.insert({ element, element2 });
-		}
-		return inverses;
+	std::set<Element> getElements() const noexcept {
+		return elements;
 	};
 	size_t order() const noexcept { return elements.size(); };
+
+	void insertElement(const Element& element) {
+		const size_t tmpSize = order();
+		for (const Element& original : elements) {
+			Element tmp = element;
+			int count = 0;
+			while (tmp != identity) {
+				const Element result = original + tmp;
+				insert(result);
+				insert(tmp + original);
+				tmp = tmp + element;
+				insert(tmp);
+			}
+		}
+		if (tmpSize != order())
+			generators.push_back(element);
+	}
+	bool validSubgroup(FiniteGroup group) const {
+		if (empty() || group.order() % order() != 0)
+			return false;
+		for (const Element& a : elements)
+			for (const Element& b : elements) {
+				if (elements.find(a + b.inverse()) == elements.end())
+					return false;
+			}
+		return true;
+	};
 	bool empty() const noexcept { return elements.empty(); };
+	void generateAllElements() {
+		elements = identity.generateAllElements();
+#ifdef _DEBUG
+		if (empty())
+			throw std::invalid_argument("Group is not valid: Elements generated must not be empty.");
+		if (!validIdentity())
+			throw std::invalid_argument("Group is not valid: Identity element added to any element does not give that element with the operation +.");
+		if (!closed())
+			throw std::invalid_argument("Group is not valid: Elements generated are not all possible with operation +.");
+		if (!validInverses())
+			throw std::invalid_argument("Group is not valid: Elements added to their inverse do not give the identity with the operation +.");
+		if (!associative())
+			throw std::invalid_argument("Group is not valid: Operation + is not associative.");
+#endif
+	};
 	bool validIdentity() const {
 		for (const Element& element : elements)
-			if (element + identityElement != element || identityElement + element != element)
+			if (element + identity != element || identity + element != element)
 				return false;
 		return true;
 	};
@@ -85,73 +84,21 @@ public:
 	};
 	bool validInverses() const {
 		for (const Element& element : elements)
-			if (element + element.inverse() != identityElement)
+			if (element + element.inverse() != identity)
 				return false;
 		return true;
 	};
-	void generateCyclicSubgroups() {
-		for (const Element& factor : elements) {
-			Element tmp = factor;
-			Subgroup group;
-			group.elements = { factor };
-			do {
-				tmp = tmp + factor;
-				group.insert(tmp);
-			} while (!isIdentity(tmp));
-			subgroups.insert(group);
-		}
-	}
-	std::set<Subgroup> getLeftCosets(const Subgroup& subgroup) {
-		std::set<Subgroup> result;
-		if (!subgroup.valid(*this))
-			return result;
-		while (result.size() < elements.size() / subgroup.elements.size()) {
-			for (const Element& element : elements) {
-				Subgroup coset;
-				for (const Element& subElement : subgroup.elements)
-					coset.insert(element + subElement);
-				coset.insertGenerator(element);
-				result.insert(coset);
-
-			}
-		}
-		return result;
-	}
-	std::set<Subgroup> getRightCosets(const Subgroup& subgroup) {
-		std::set<Subgroup> result;
-		if (!subgroup.valid(*this))
-			return result;
-		while (result.size() < elements.size() / subgroup.getElements().size()) {
-			for (const Element& element : elements) {
-				Subgroup coset;
-				for (const Element& subElement : subgroup.getElements())
-					coset.insert(subElement + element);
-				coset.insertGenerator(element);
-				result.insert(coset);
-			}
-		}
-		return result;
-	}
-	std::set<Subgroup> generateAllSubgroups() {
-		if (elements.size() < 2)
-			generateAllElements();
-
-		// Threads concurrently find all possible combinations of elements
-		std::thread threads[NUM_PROCESSORS];
-		for (std::thread& thread : threads)
-			thread = std::thread([&]() {
-				generateAllSubgroups(Subgroup(), order() / 2, elements.begin());
-			});
-
-		for (std::thread& thread : threads)
-			thread.join();
-
-		subgroups.insert(Subgroup(*this));
-		return subgroups;
-	}
+	bool associative() const {
+		for (const Element& a : elements)
+			for (const Element& b : elements)
+				for (const Element& c : elements)
+					if ((a + b) + c != a + (b + c))
+						return false;
+		return true;
+	};
 	friend bool operator<(const FiniteGroup& lhs, const FiniteGroup& rhs) noexcept {
-		if (lhs.elements.size() != rhs.elements.size())
-			return lhs.elements.size() < rhs.elements.size();
+		if (lhs.order() != rhs.order())
+			return lhs.order() < rhs.order();
 		auto itr2 = rhs.elements.begin();
 		for (auto itr1 = lhs.elements.begin(); itr1 != lhs.elements.end(); ++itr1, ++itr2)
 			if (*itr1 != *itr2)
@@ -159,7 +106,7 @@ public:
 		return false;
 	}
 	friend bool operator==(const FiniteGroup& lhs, const FiniteGroup& rhs) noexcept {
-		if (lhs.elements.size() != rhs.elements.size())
+		if (lhs.order() != rhs.order())
 			return false;
 		auto itr2 = rhs.elements.begin();
 		for (auto itr1 = lhs.elements.begin(); itr1 != lhs.elements.end(); ++itr1, ++itr2)
@@ -167,10 +114,13 @@ public:
 				return false;
 		return true;
 	}
+	friend bool operator<=(const FiniteGroup& subgroup, const FiniteGroup& group) noexcept {
+		return subgroup.validSubgroup(group);
+	}
 	friend std::ostream& operator<<(std::ostream& out, FiniteGroup& group) {
 		out << "{";
 		bool first = true;
-		for (const Element& element : group.getElements()) {
+		for (const Element& element : group.elements) {
 			if (first)
 				first = false;
 			else
@@ -180,38 +130,15 @@ public:
 		out << "}";
 		return out;
 	}
-	void generateAllElements() {
-		elements = identityElement.generateAllElements();
-#ifdef _DEBUG
-		if (empty())
-			throw std::invalid_argument("Group is not valid: Must not be empty.");
-		if (!validIdentity())
-			throw std::invalid_argument("Group is not valid: Identity element is not the identity.");
-		if (!closed())
-			throw std::invalid_argument("Group is not valid: Must be closed.");
-		if (!validInverses())
-			throw std::invalid_argument("Group is not valid: Inverses are not inverses.");
-#endif
+	void insertGenerator(Element generator) { generators.push_back(generator); }
+	std::vector<Element> getGenerators() {
+		if (generators.size() > 1 && generators[0] == identity)
+			generators.erase(generators.begin());
+		return generators;
 	};
 private:
-	std::mutex writelock;
-	Element identityElement;
 	std::set<Element> elements;
-	std::set<Subgroup> subgroups;
+	std::vector<Element> generators;
 	inline bool insert(const Element& g1) noexcept { return elements.insert(g1).second; };
-	inline bool insert(const Subgroup& subgroup) noexcept {
-		const std::lock_guard<std::mutex> lock(writelock);
-		const bool inserted = subgroups.insert(subgroup).second;
-		return inserted;
-	};
-	void generateAllSubgroups(const Subgroup& subgroup, size_t maxSize, typename std::set<Element>::iterator itr) {
-		for (; itr != elements.end(); ++itr) {
-			Subgroup tmp(subgroup);
-			const Element element = *itr;
-			tmp.insertElement(element);
-			if (tmp.valid(*this) && insert(tmp))
-				generateAllSubgroups(tmp, maxSize, itr);
-		}
-	}
 };
 

@@ -10,7 +10,7 @@ struct Element {
 	/// </summary>
 	Element() {};
 	/// <summary>
-	/// Produces an element that when added to this element gives the identity. Not used or checked by FiniteGroup
+	/// Produces an element that when added to this element gives the identity.
 	/// </summary>
 	/// <returns>The element that will give the identity added to this element</returns>
 	Element inverse() const noexcept { return {}; };
@@ -18,9 +18,9 @@ struct Element {
 	/// Creates all possible elements of the group
 	/// </summary>
 	/// <returns>A set of elements in the full group</returns>
-	std::set<Element> generateAllElements() { return { {} }; };
+	static std::set<Element> generateAllElements() { return { {} }; };
 	/// <summary>
-	/// Adds one element to another
+	/// Returns result of operating this element with other
 	/// </summary>
 	/// <param name="other"></param>
 	/// <returns>Result of adding elements</returns>
@@ -53,10 +53,12 @@ struct Element {
 	/// <returns>Result of comparison</returns>
 	friend bool operator<(const Element& lhs, const Element& rhs) noexcept { return false; }
 	/// <summary>
-	/// Display the element
+	/// Output the element
 	/// </summary>
 	friend std::ostream& operator<<(std::ostream& out, const Element& element) {
 		out << "{}";
 		return out;
 	};
 };
+
+struct MockElement : public Element {};

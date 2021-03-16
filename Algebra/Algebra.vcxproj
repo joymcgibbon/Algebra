@@ -146,13 +146,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="GroupOperations.h" />
     <ClInclude Include="Abelian.h" />
     <ClInclude Include="DirectProduct.h" />
     <ClInclude Include="Element.h" />
     <ClInclude Include="Group.h" />
     <ClInclude Include="Cyclic.h" />
     <ClInclude Include="SetOperations.h" />
-    <ClInclude Include="Subgroup.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp" />

@@ -4,19 +4,39 @@
 #include "Group.h"
 #include "Cyclic.h"
 #include "Abelian.h"
+#include "GroupOperations.h"
 #include <iostream>
 
-
-typedef FiniteGroup<DirectProduct<Cyclic<3>, Cyclic<3>>> TYPE;
-//typedef FiniteGroup<Cyclic<6>> TYPE;
-void printCosets(TYPE group, bool printElements = false, bool printCosets = true);
-void getAndPrintCosets(FiniteGroup<TYPE::Element>* group, TYPE::Subgroup subgroup, bool printElements = false, bool printCosets = true, bool printIfNotNormal = true);
-void printInverses(TYPE group);
+template <typename FiniteGroup>
+void printCosets(FiniteGroup group, bool printElements = false, bool printCosets = true);
+template <typename FiniteGroup>
+void getAndPrintCosets(FiniteGroup group, FiniteGroup subgroup, bool printElements = false, bool printCosets = true, bool printIfNotNormal = true);
+template <typename FiniteGroup>
+void printInverses(FiniteGroup group);
 
 int main() {
 	try {
+		FiniteGroup<Cyclic<4>> group1;
+		group1.generateAllElements();
+		//if (group.order() <= 120)
+		std::cout << group1 << '\n';
+		std::cout << "\n\n";
+		for (const auto& element : GroupOperations::generators(group1)) {
+			std::cout << element << "\n";
+		}
+		printCosets(group1, false, false);
 
-		printCosets(TYPE(), false, false);
+		printTable(GroupOperations::cayleyTable(group1));
+		//FiniteGroup<Abelian::Multiplicitive<42>> group;
+		//group.generateAllElements();
+		//if (group.order() <= 120)
+		//std::cout << group << '\n';
+
+		//FiniteGroup<Abelian::Multiplicitive<45>> group2;
+		//group2.generateAllElements();
+		//if (group.order() <= 120)
+		//std::cout << group2 << '\n';
+		//printCosets(TYPE(), false, false);
 
 
 	}
@@ -25,8 +45,9 @@ int main() {
 	}
 }
 
-void printCosets(TYPE group, bool printElements, bool printCosets) {
-	time_t start;
+template <typename FiniteGroup>
+void printCosets(FiniteGroup group, bool printElements, bool printCosets) {
+	/*time_t start;
 	time_t end;
 	time(&start);
 	auto subgroups = group.generateAllSubgroups();
@@ -46,9 +67,9 @@ void printCosets(TYPE group, bool printElements, bool printCosets) {
 	}
 
 	std::cout << "\nTime: " << minutes << ':' << (seconds > 9 ? "" : "0") << seconds;
-	std::cout << "----------------------------------" << subgroups.size() << "----------------------------------\n";
-	/*
-	for (TYPE::Subgroup subgroup : subgroups) {
+	std::cout << "----------------------------------" << subgroups.size() << "----------------------------------\n";*/
+	
+	/*for (FiniteGroup::Subgroup subgroup : subgroups) {
 		getAndPrintCosets(&group, subgroup, printElements, printCosets);
 	}
 	std::cout << "----------------------------------" << subgroups.size() << "----------------------------------\n";
@@ -60,12 +81,13 @@ void printCosets(TYPE group, bool printElements, bool printCosets) {
 	std::cout << group << '\n';*/
 }
 
-void getAndPrintCosets(TYPE* group, TYPE::Subgroup subgroup, bool printElements, bool printCosets, bool printIfNotNormal) {
-	if (!subgroup.valid(*group))
+template <typename FiniteGroup>
+void getAndPrintCosets(FiniteGroup group, FiniteGroup subgroup, bool printElements, bool printCosets, bool printIfNotNormal) {
+	if (!subgroup.validSubgroup(group))
 		std::cout << "Invalid subgroup \n";
-	auto cosets = group->getLeftCosets(subgroup);
+	auto cosets = GroupOperations::leftCosets(group, subgroup);
 	auto cosetElements = cosets;
-	auto rightCosets = group->getRightCosets(subgroup);
+	auto rightCosets = GroupOperations::rightCosets(group, subgroup);
 	bool equal = true;
 	for (auto rightCoset : rightCosets)
 		if (std::find(cosetElements.begin(), cosetElements.end(), rightCoset) == cosetElements.end())
@@ -76,7 +98,7 @@ void getAndPrintCosets(TYPE* group, TYPE::Subgroup subgroup, bool printElements,
 	}
 	std::cout << "<";
 	bool first = true;
-	for (const TYPE::Element& gen : subgroup.getGenerators()) {
+	for (const FiniteGroup::Element& gen : subgroup.getGenerators()) {
 		if (first)
 			first = false;
 		else
@@ -85,14 +107,14 @@ void getAndPrintCosets(TYPE* group, TYPE::Subgroup subgroup, bool printElements,
 	}
 	std::cout << ">= \t";
 	if (!printElements)
-		std::cout << subgroup.getElements().size();
+		std::cout << subgroup.order();
 	else
 		std::cout << subgroup;
 	std::cout << "\n";
 
 	if (printCosets) {
 		//for (int i = 0; i < 24; ++i)
-		for (TYPE::Subgroup coset : cosets) {
+		for (FiniteGroup coset : cosets) {
 			//if (coset.getGenerators()[0] == i) {
 			std::cout << "<";
 			std::cout << coset.getGenerators()[0];
@@ -103,8 +125,9 @@ void getAndPrintCosets(TYPE* group, TYPE::Subgroup subgroup, bool printElements,
 	}
 }
 
-void printInverses(TYPE group) {
-	for (const auto& element : group.getInverses()) {
+template <typename FiniteGroup>
+void printInverses(FiniteGroup group) {
+	for (const auto& element : GroupOperations::getInverses(group)) {
 		std::cout << element.first;
 		std::cout << "^-1=\t";
 		std::cout << element.second << "\t" << element.first.inverse();

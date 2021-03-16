@@ -27,10 +27,10 @@ struct Cyclic : public Element {
 			result[index] = getIdx(index + 1);
 		return result;
 	};
-	std::set<Cyclic> generateAllElements() {
-		std::set<Cyclic> result = { Cyclic() };
+	static std::set<Cyclic> generateAllElements() {
+		std::vector<Cyclic> result;
 		permute(result, Cyclic(), 0, num - 1);
-		return result;
+		return std::set<Cyclic>(result.begin(), result.end());
 	};
 	Cyclic operator+(const Cyclic& other) const noexcept {
 		Cyclic result;
@@ -78,9 +78,9 @@ struct Cyclic : public Element {
 	};
 
 private:
-	static void permute(std::set<Cyclic>& result, Cyclic element, int idxStart, int idxEnd) {
+	static void permute(std::vector<Cyclic>& result, Cyclic element, int idxStart, int idxEnd) {
 		if (idxStart == idxEnd)
-			result.insert(element);
+			result.push_back(element);
 		else
 			for (int index = idxStart; index < num; ++index) {
 				Cyclic tmp = element;

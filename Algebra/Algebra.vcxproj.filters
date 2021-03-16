@@ -33,7 +33,7 @@
     <ClInclude Include="Abelian.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Subgroup.h">
+    <ClInclude Include="GroupOperations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
