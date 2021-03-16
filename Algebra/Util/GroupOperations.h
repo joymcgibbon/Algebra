@@ -60,7 +60,7 @@ public:
 	template <typename Element>
 	static std::set<FiniteGroup<Element>> leftCosets(const FiniteGroup<Element>& group, const FiniteGroup<Element>& subgroup) {
 		std::set<FiniteGroup<Element>> result;
-		if (!subgroup.validSubgroup(group))
+		if (!(subgroup <= group))
 			return result;
 
 		while (result.size() < group.order() / subgroup.order()) {
@@ -95,6 +95,17 @@ public:
 	};
 
 	template <typename Element>
+	static bool normal(const FiniteGroup<Element>& group, const FiniteGroup<Element>& subgroup) {
+		auto leftCosets = GroupOperations::leftCosets(group, subgroup);
+		auto rightCosets = GroupOperations::rightCosets(group, subgroup);
+		bool equal = true;
+		for (auto rightCoset : rightCosets)
+			if (std::find(leftCosets.begin(), leftCosets.end(), rightCoset) == leftCosets.end())
+				equal = false;
+		return equal;
+	};
+
+	template <typename Element>
 	static std::set<FiniteGroup<Element>> cyclicSubgroups(const FiniteGroup<Element>& group) {
 		std::set<FiniteGroup<Element>> subgroups;
 		for (const Element& factor : group.elements) {
@@ -112,6 +123,8 @@ public:
 
 	template <typename Element>
 	static std::vector<Element> generators(const FiniteGroup<Element>& group) {
+		if (group.order() == 1)
+			return {group.identity};
 		std::vector<Element> tmpElements(++group.elements.begin(), group.elements.end());
 		std::mt19937 rand(1);
 		//std::shuffle(tmpElements.begin(), tmpElements.end(), rand);
@@ -154,7 +167,7 @@ public:
 		isomorphism[Element()] = MockElement();
 
 		std::vector<std::vector<Element>> cayleyTableG = cayleyTable(G.elements);
-		std::vector<std::vector<MockElement>> cayleyTableH = cayleyTable(G.elements);
+		std::vector<std::vector<MockElement>> cayleyTableH = cayleyTable(H.elements);
 
 	};
 

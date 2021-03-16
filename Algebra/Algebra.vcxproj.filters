@@ -15,30 +15,33 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Element.h">
+    <ClInclude Include="Elements\Element.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SetOperations.h">
+    <ClInclude Include="Util\SetOperations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DirectProduct.h">
+    <ClInclude Include="Elements\DirectProduct.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Group.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Cyclic.h">
+    <ClInclude Include="Elements\Cyclic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Abelian.h">
+    <ClInclude Include="Elements\Abelian.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GroupOperations.h">
+    <ClInclude Include="Util\GroupOperations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\TupleOperations.h">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

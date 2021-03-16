@@ -16,17 +16,30 @@ void printInverses(FiniteGroup group);
 
 int main() {
 	try {
-		FiniteGroup<Cyclic<4>> group1;
-		group1.generateAllElements();
-		//if (group.order() <= 120)
-		std::cout << group1 << '\n';
-		std::cout << "\n\n";
-		for (const auto& element : GroupOperations::generators(group1)) {
-			std::cout << element << "\n";
+		{
+			FiniteGroup<Abelian::Additive<4>> group1;
+			group1.generateAllElements();
+			//if (group.order() <= 120)
+			std::cout << group1 << '\n';
+			std::cout << "\n\n";
+			for (const auto& element : GroupOperations::generators(group1)) {
+				std::cout << element << "\n";
+			}
+			printCosets(group1, false, false);
+			printTable(std::cout, GroupOperations::cayleyTable(group1));
 		}
-		printCosets(group1, false, false);
-
-		printTable(GroupOperations::cayleyTable(group1));
+		{
+			FiniteGroup<Abelian::Multiplicitive<5>> group1;
+			group1.generateAllElements();
+			//if (group.order() <= 120)
+			std::cout << group1 << '\n';
+			std::cout << "\n\n";
+			for (const auto& element : GroupOperations::generators(group1)) {
+				std::cout << element << "\n";
+			}
+			printCosets(group1, false, false);
+			printTable(std::cout, GroupOperations::cayleyTable(group1));
+		}
 		//FiniteGroup<Abelian::Multiplicitive<42>> group;
 		//group.generateAllElements();
 		//if (group.order() <= 120)

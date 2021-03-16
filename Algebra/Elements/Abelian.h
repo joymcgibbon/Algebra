@@ -1,6 +1,7 @@
 #pragma once
 #include "Group.h"
 #include <algorithm> 
+
 namespace Abelian {
 	template <size_t num>
 	struct Additive : public Element {
